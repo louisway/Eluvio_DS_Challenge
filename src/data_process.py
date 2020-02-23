@@ -3,6 +3,7 @@ import sys
 import nltk
 import string
 import re
+import os
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import word_tokenize
@@ -34,29 +35,36 @@ def tok_stop_lemm(title):
      
 raw = open("../Eluvio_DS_Challenge.csv","r")
 csv_reader = csv.reader(raw, delimiter= ",")
-output = open("../train.txt","w")
+draft_output = open("../train_draft.dat","w")
+output = open("../train.dat","w")
 
-#count lines
-line = -1 
-for row in csv_reader:
-    line += 1
-
-raw.close()
-output.write(str(line))
-output.write("\n")
 
 #processing line by line 
 line = -1
-raw = open("../Eluvio_DS_Challenge.csv","r")
-csv_reader = csv.reader(raw, delimiter= ",")
 for row in csv_reader:
     if line%5000 == 0:
         print(str(line) +" lines has been processed")
 
     if line >= 0:
         postext = tok_stop_lemm(row[4])
-        output.write(' '.join(postext))
-        output.write("\n") 
+        if len(postext) == 0:
+            line -= 1
+        else:
+            draft_output.write(' '.join(postext))
+            draft_output.write("\n") 
     line += 1
 raw.close()
+draft_output.close()
+draft_output = open("../train_draft.dat","r")
+output.write(str(line))
+output.write("\n")
+
+while True:
+    line = draft_output.readline()
+    if not line:
+        break
+    output.write(line)
+   
+draft_output.close()
 output.close()
+os.remove("../train_draft.dat")
